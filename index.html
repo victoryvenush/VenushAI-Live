@@ -3,60 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VenushAI // Secure Core</title>
-    <style>
-        /* Mobile Warning Styles */
-        #mobileNotice { display: none; position: fixed; inset: 0; background: #04060e; z-index: 99999; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-        @media (max-width: 768px) { #mobileNotice { display: flex !important; } }
-        /* Add your existing CSS here */
-    </style>
+    <title>VenushAI // Intelligence Core</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="mobileNotice">
-        <h2 style="color: #06b6d4;">Interface Notice</h2>
-        <p style="color: white;">Please enable "Desktop Site" mode for the best experience.</p>
+    <div id="mobileNotice" style="display: none; position: fixed; inset: 0; background: #04060e; z-index: 99999; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center;">
+        <h2 style="color: #06b6d4; font-family: sans-serif; margin-bottom: 15px;">Interface Notice</h2>
+        <p style="color: #f8fafc; font-size: 1rem; margin-bottom: 25px;">For the best experience, please enable <b>"Desktop Site"</b> mode in your browser settings.</p>
+        <div style="width: 50px; height: 50px; border: 4px solid #0a0e1a; border-top: 4px solid #06b6d4; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    </div>
+    <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+
+    <div id="authContainer" style="position: fixed; inset: 0; background: #04060e; display: flex; align-items: center; justify-content: center; z-index: 9999; font-family: sans-serif;">
+        <div style="background: #0a0e1a; border: 1px solid rgba(6, 182, 212, 0.15); padding: 2.5rem; border-radius: 12px; width: 100%; max-width: 400px;">
+            <h2 id="authTitle" style="color: #fff; margin-bottom: 1.5rem; font-size: 1.5rem; font-weight: 600; text-align: center;">Sign In to VenushAI</h2>
+            <div style="margin-bottom: 1rem;">
+                <label style="color: #64748b; font-size: 0.85rem; display: block; margin-bottom: 0.5rem;">Email Address</label>
+                <input type="email" id="authEmail" style="width: 100%; padding: 0.75rem; background: #10162b; border: 1px solid rgba(6, 182, 212, 0.15); border-radius: 6px; color: #fff; box-sizing: border-box; outline: none;">
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="color: #64748b; font-size: 0.85rem; display: block; margin-bottom: 0.5rem;">Password</label>
+                <input type="password" id="authPassword" style="width: 100%; padding: 0.75rem; background: #10162b; border: 1px solid rgba(6, 182, 212, 0.15); border-radius: 6px; color: #fff; box-sizing: border-box; outline: none;">
+            </div>
+            <button id="authSubmitBtn" style="width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #818cf8, #06b6d4); color: #04060e; font-weight: bold; border: none; border-radius: 6px; cursor: pointer;">Sign In</button>
+            <p style="color: #64748b; font-size: 0.85rem; text-align: center; margin-top: 1.25rem;">
+                <span id="authToggleText">Don't have an account?</span> 
+                <span id="authToggleLink" style="color: #06b6d4; cursor: pointer; text-decoration: underline; margin-left: 4px;">Sign Up</span>
+            </p>
+        </div>
     </div>
 
-    <div id="app">
-        <textarea id="userInput" placeholder="Ask anything..."></textarea>
-        <button id="sendBtn">SEND</button>
-        <div id="chatWindow"></div>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="brand-zone">
+                <div class="brand-text">
+                    <h2>VenushAI</h2>
+                    <span>CORE V2.5</span>
+                </div>
+            </div>
+            <button id="newChatBtn" class="control-btn new-chat-btn">NEW TRANSMISSION</button>
+            <div class="history-zone">
+                <p class="info-header">SAVED CHATS</p>
+                <div id="historyList" class="history-list"></div>
+            </div>
+            <button id="clearChat" class="control-btn clear-btn">PURGE ALL DATA</button>
+        </aside>
+
+        <main class="chat-workspace">
+            <div id="chatWindow" class="chat-stream"></div>
+            <div class="input-hub">
+                <div class="input-container">
+                    <textarea id="userInput" placeholder="Send a message..." rows="1"></textarea>
+                    <button id="sendBtn" title="Send">
+                        <svg viewBox="0 0 24 24" style="width:22px; height:22px;"><path fill="currentColor" d="M2,21L23,12L2,3V10L17,12L2,14V21Z" /></svg>
+                    </button>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <script>
-        // SECURE API LOGIC
-        async function getResponse(userMessage) {
-            // Check if key exists in browser storage
-            let apiKey = localStorage.getItem('groq_key');
-            
-            if (!apiKey) {
-                apiKey = prompt("Enter your Groq API Key (This is saved only on your browser):");
-                if (apiKey) localStorage.setItem('groq_key', apiKey);
-                else return;
-            }
-
-            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${apiKey}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
-                    messages: [{ role: "user", content: userMessage }]
-                })
-            });
-            
-            const data = await response.json();
-            return data.choices[0].message.content;
-        }
-
-        document.getElementById('sendBtn').onclick = async () => {
-            const input = document.getElementById('userInput').value;
-            const output = await getResponse(input);
-            document.getElementById('chatWindow').innerText = output;
-        };
-    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
